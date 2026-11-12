@@ -5,7 +5,8 @@ export default {
   languages: ['zh', 'en'],
   // weather: { city: '上海', cityEn: 'Shanghai', latitude: 31.23, longitude: 121.47, timezone: 'Asia/Shanghai' },
   weather: null,
-  dock: ['blog', 'about', 'mailbox', 'phone'],
+  // The Dock, in order: ids of the pages in index.html (data-station), and 'phone'.
+  dock: ['blog', 'about', 'house', 'pool', 'bedroom', 'study', 'billiards', 'mailbox', 'phone'],
   mailbox: { endpoint: '', email: '', turnstileSitekey: '' },
   badge: true,
 };
