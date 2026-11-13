@@ -1,6 +1,8 @@
-// The house shell, the pool basin and the island surface, built from blocks.
-// The island itself comes from the engine (@engine/world/terrain.js).
-import { HOUSE, SHELL, ENTRANCE, TERRACE, POOL, POOL_DECK } from './layout.js';
+// The house shell, the pool basin, the island surface and the east lagoon,
+// built from blocks. The island itself comes from the engine
+// (@engine/world/terrain.js).
+import { HOUSE, SHELL, ENTRANCE, TERRACE, POOL, POOL_DECK,
+  LAGOON, ISLET, BRIDGE, ROAD, BUS_STOP } from './layout.js';
 import { inRect } from '@engine/world/terrain.js';
 
 export function defineBlocks(grid) {
@@ -21,11 +23,15 @@ export function defineBlocks(grid) {
   grid.define('partition', { tex: { all: 'wood_panel' }, merge: true });
 }
 
-// What tops each column of the island: floors, decks and paving, else grass.
+// What tops each column of the island: floors, decks, paving, sand and a
+// plank bridge, else grass. The lagoon's water cells are cleared afterwards.
 export function surfaceAt(x, z) {
   if (inRect(SHELL, x, z)) return 'wood_floor';
   if (inRect(TERRACE, x, z)) return 'deck';
   if (inRect(POOL_DECK, x, z)) return 'travertine';
+  if (inRect(ISLET, x, z)) return 'sand';
+  if (inRect(BRIDGE, x, z)) return 'deck';
+  if (inRect(ROAD, x, z) || inRect(BUS_STOP, x, z)) return 'pavers';
   if (x >= -2 && x < 3 && z >= 6 && z < 24) return 'pavers';
   return 'grass';
 }
@@ -37,6 +43,17 @@ export function buildPool(grid) {
       if (inside) grid.set(x, y, z, y < POOL.bed ? 'pool_deep' : null);
       else grid.set(x, y, z, y === -1 ? 'coping' : 'pool_tile');
     }
+  }
+}
+
+// Carve the lagoon out of the island so the engine's sea sheet (y = -1.08)
+// shows through. The islet keeps its column; the bridge keeps only its top
+// deck block so nav.js still sees solid ground at y = -1 and water below.
+export function buildLagoon(grid) {
+  for (let x = LAGOON.x0; x < LAGOON.x1; x++) for (let z = LAGOON.z0; z < LAGOON.z1; z++) {
+    if (inRect(ISLET, x, z)) continue;
+    const deck = inRect(BRIDGE, x, z);
+    for (let y = deck ? -2 : -1; y >= -8; y--) grid.set(x, y, z, null);
   }
 }
 

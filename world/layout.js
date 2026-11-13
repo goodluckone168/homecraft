@@ -1,7 +1,8 @@
 // 1 block = 1 m. x east, z south, y up.
-// Site layout: a big house with four rooms, a swimming pool and the original
-// mailbox / portal. Only data lives here; world/house.js builds the shell and
-// world/rooms.js builds the furniture.
+// Site layout: a big house with four rooms, a swimming pool, the original
+// mailbox / portal, and an east shore with a lagoon, a little island, a
+// bridge, a bus stop and a bus. Only data lives here; world/house.js builds
+// the ground, world/rooms.js and world/outdoors.js build the props.
 export const ISLAND = { x0: -36, x1: 38, z0: -26, z1: 31 };
 export const SPAWN = { x: 0.5, z: 18, heading: Math.PI };
 
@@ -24,6 +25,17 @@ export const BEDROOM = { x0: -16, x1: 0, z0: -18, z1: -5 };
 export const STUDY = { x0: 0, x1: 16, z0: -18, z1: -5 };
 export const BILLIARDS = { x0: -16, x1: 16, z0: -5, z1: 6 };
 
+// ── East shore ──────────────────────────────────────────────────────────────
+// landscape.js draws one broad sea sheet at y = -1.08, so clearing the top
+// blocks opens water. nav.js only trusts a solid block at y = -1, so the islet
+// and the plank bridge keep theirs and stay walkable; the lagoon does not.
+export const LAGOON = { x0: 19, x1: 32, z0: 10, z1: 26 };
+export const ISLET = { x0: 24, x1: 29, z0: 15, z1: 21 };
+export const BRIDGE = { x0: 18, x1: 24, z0: 17, z1: 19 };
+export const ROAD = { x0: 18, x1: 34, z0: -6, z1: 0 };
+export const BUS_STOP = { x0: 23, x1: 30, z0: -13, z1: -7 };
+export const BUS = { x0: 21, x1: 33, z0: -5.6, z1: -2.2 };
+
 // Stations: id must match index.html's data-station AND the hotspot id.
 // `at` is where the player stands (about 1.5 m from the object), `look` is
 // the point the camera turns toward.
@@ -35,12 +47,17 @@ export const STATIONS = [
   { id: 'billiards', name: '台球室', en: 'Billiards', icon: 'coffee', at: [-8, 3.4], look: [-8, 0] },
   { id: 'mailbox', name: '留言', en: 'Mailbox', icon: 'mail', at: [0.5, 23.9], look: [0.5, 25.5] },
   { id: 'portal', name: '传送门', en: 'Portal', icon: 'portal', at: [8, 23.1], look: [8, 25.5] },
+  { id: 'island', name: '小岛', en: 'Little Island', icon: 'mountain', at: [26, 16.5], look: [26, 19] },
+  { id: 'bridge', name: '桥梁', en: 'The Bridge', icon: 'map', at: [20, 18], look: [24, 18] },
+  { id: 'busstop', name: '公交站', en: 'Bus Stop', icon: 'scroll', at: [26.5, -7.5], look: [26.5, -10] },
+  { id: 'bus', name: '公交车', en: 'The Bus', icon: 'works', at: [27, -1.2], look: [27, -4] },
 ];
 
 export const MAILBOX = { x: 0.5, z: 25.5, yaw: Math.PI };
 export const PORTAL = { x: 8, z: 25.5, yaw: Math.PI };
 
-export const TREES = [[30, -12], [-26, 14], [28, 14]];
+// Moved off the east shore so the bus terminus and the lagoon stay clear.
+export const TREES = [[-30, -10], [-26, 14], [-30, 24]];
 
 // Indoor take-off exits toward the front terrace. Harmless when unused.
 export const DOORWAY = [{ x: 0.5, y: 1, z: 5 }, { x: 0.5, y: 1.2, z: 8 }];
