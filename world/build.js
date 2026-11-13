@@ -3,10 +3,10 @@
 // optional; we merge the indoor and outdoor scene parts into one set.
 import { buildIsland } from '@engine/world/terrain.js';
 import { buildForest } from '@engine/world/landscape.js';
-import { ISLAND, TREES } from './layout.js';
-import { defineBlocks, surfaceAt, buildLagoon, buildPool, buildShell } from './house.js';
-import { furnishRooms } from './rooms.js';
-import { furnishOutdoors } from './outdoors.js';
+import { ISLAND, TREES } from './layout.js?v=20261113b';
+import { defineBlocks, surfaceAt, buildLagoon, buildPool, buildShell } from './house.js?v=20261113b';
+import { furnishRooms } from './rooms.js?v=20261113b';
+import { furnishOutdoors } from './outdoors.js?v=20261113b';
 
 export function build({ grid, layer }) {
   defineBlocks(grid);

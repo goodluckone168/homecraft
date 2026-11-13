@@ -1,4 +1,4 @@
-import { zones } from './zones.js';
+import { zones } from './zones.js?v=20261113b';
 // The store is bundled here so the current directory does not depend on legacy files.
 /* Local navigation data. No network access and no HTML evaluation. */
 const NavigationStore = (() => {
@@ -314,7 +314,7 @@ window.addEventListener('keydown',event=>{
 $('#world-link')?.addEventListener('click',event=>{if(!inFrame)return;event.preventDefault();closeDirectory();});
 (async()=>{
 try{
-  const response=await fetch(new URL('./data.json',location.href));if(!response.ok)throw new Error('网址数据未能加载，请刷新重试。');base=await response.json();
+  const response=await fetch(new URL('./data.json?v=20261113b',location.href));if(!response.ok)throw new Error('网址数据未能加载，请刷新重试。');base=await response.json();
   store=NavigationStore.create(base,storage);data=store.getData();
   $('#search-mode').innerHTML='<option value="local">本站网址</option>'+data.engines.map(e=>`<option value="${esc(e.id)}">${esc(e.id==='search_1'?'百度':e.name)}</option>`).join('');
   $('#search-mode').value=data.engines.some(e=>e.id==='search_1')?'search_1':'local';

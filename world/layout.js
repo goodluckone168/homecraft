@@ -12,6 +12,10 @@ export const SHELL = { x0: HOUSE.x0 - 1, x1: HOUSE.x1 + 1, z0: HOUSE.z0 - 1, z1:
 export const ENTRANCE = { x0: -1, x1: 1 };
 export const TERRACE = { x0: -17, x1: 17, z0: 6, z1: 9 };
 
+// A paved plaza just east of the spawn path. It gives the world something to
+// look at the moment you land: a basketball court, lamps, benches, planters.
+export const PLAZA = { x0: 5, x1: 17, z0: 10, z1: 21 };
+
 // The pool is a real swimmable basin (engine/world/pool.js). bed must be an
 // integer because it is used as a block-grid index.
 export const POOL = { x0: -14, x1: -2, z0: 10, z1: 18, water: -0.22, bed: -3 };
@@ -57,7 +61,8 @@ export const MAILBOX = { x: 0.5, z: 25.5, yaw: Math.PI };
 export const PORTAL = { x: 8, z: 25.5, yaw: Math.PI };
 
 // Moved off the east shore so the bus terminus and the lagoon stay clear.
-export const TREES = [[-30, -10], [-26, 14], [-30, 24]];
+// Two extra trees frame the plaza without blocking the court or the spawn.
+export const TREES = [[-30, -10], [-26, 14], [-30, 24], [-24, 2], [-22, -20]];
 
 // Indoor take-off exits toward the front terrace. Harmless when unused.
 export const DOORWAY = [{ x: 0.5, y: 1, z: 5 }, { x: 0.5, y: 1.2, z: 8 }];

@@ -15,12 +15,14 @@
 <meta property="og:image" content="assets/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.png">
-<link rel="stylesheet" href="engine/style.css">
+<link rel="stylesheet" href="engine/style.css?v=20261113b">
 <script type="importmap">{"imports":{
-  "three":"./vendor/three/three.module.min.js",
+  "three":"./vendor/three/three.module.min.js?v=20261113b",
   "@engine/":"./engine/",
   "@world/":"./world/",
-  "@config":"./home.config.js"
+  "@world/build.js":"./world/build.js?v=20261113b",
+  "@world/layout.js":"./world/layout.js?v=20261113b",
+  "@config":"./home.config.js?v=20261113b"
 }}</script>
 <style>
 /* The directory is a full 2D site inside the panel: give embedded nav rooms
@@ -38,11 +40,97 @@ dialog#panel[data-station="world"] { width: min(760px, calc(100vw - 32px)); }
     height: auto;
   }
 }
+/* Boot navigation: plain HTML/CSS, visible before the 3D HUD appears and a
+   complete fallback if the module graph or WebGL never starts. */
+#boot-nav {
+  position: fixed; z-index: 60; left: 12px; top: 12px;
+  width: min(310px, calc(100vw - 24px)); max-height: calc(100dvh - 24px);
+  overflow: auto; box-sizing: border-box; color: #f7f2df; background: #18372d;
+  border: 4px solid #a2ad7d; box-shadow: 0 6px 0 #0d241c, 0 12px 32px #0008;
+  font: 13px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+#boot-nav .bn-head { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-bottom: 2px solid #a2ad7d; }
+#boot-nav .bn-head b { font-size: 14px; letter-spacing: 1px; }
+#boot-nav .bn-head span { color: #ebc775; font-size: 11px; letter-spacing: 1px; }
+#boot-nav .bn-head button {
+  margin-left: auto; background: #efcc7d; color: #18372d; border: 2px solid #f7f2df;
+  cursor: pointer; font: 600 12px/1 system-ui, sans-serif; padding: 6px 9px;
+}
+#boot-nav .bn-body { padding: 10px 11px 12px; }
+#boot-nav p.bn-hint { margin: 0 0 9px; color: #cfe0d2; font-size: 11px; }
+#boot-nav .bn-label { display: block; margin: 10px 0 5px; color: #ebc775; font-size: 11px; letter-spacing: 1px; }
+#boot-nav .bn-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+#boot-nav button.bn-link, #boot-nav a.bn-link {
+  display: inline-block; padding: 6px 9px; font: 12px/1.2 system-ui, sans-serif;
+  background: #245b43; color: #f7f2df; border: 2px solid #3d7d5d;
+  text-decoration: none; cursor: pointer;
+}
+#boot-nav button.bn-link:hover, #boot-nav a.bn-link:hover { background: #3d7d5d; }
+#boot-nav.min .bn-body { display: none; }
+#boot-nav.min { width: auto; max-height: none; }
+#boot-overlay {
+  position: fixed; z-index: 70; inset: 0; background: #0009;
+  display: flex; align-items: center; justify-content: center; padding: 14px; box-sizing: border-box;
+}
+#boot-overlay[hidden] { display: none; }
+#boot-overlay .bo-card {
+  width: min(1100px, 100%); height: min(780px, 100%); display: flex; flex-direction: column;
+  background: #f5f2e9; color: #203c32; border: 4px solid #18372d; box-shadow: 0 12px 40px #000a;
+}
+#boot-overlay .bo-head {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  background: #18372d; color: #f7f2df; border-bottom: 4px solid #a2ad7d;
+}
+#boot-overlay .bo-head b { font-size: 16px; }
+#boot-overlay .bo-head button {
+  margin-left: auto; background: #efcc7d; color: #18372d; border: 2px solid #f7f2df;
+  cursor: pointer; font: 600 13px/1 system-ui, sans-serif; padding: 7px 12px;
+}
+#boot-overlay iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+#boot-overlay iframe[hidden] { display: none; }
+#boot-overlay #bo-body { flex: 1; overflow: auto; padding: 20px 22px; }
+#boot-overlay #bo-body[hidden] { display: none; }
+#boot-overlay #bo-body .page { font: 15px/1.7 system-ui, sans-serif; max-width: 760px; margin: 0 auto; }
+#boot-overlay #bo-body .page h2 { font-size: 24px; margin: 0 0 14px; }
+#boot-overlay #bo-body .page p { margin: 0 0 12px; }
+#boot-overlay #bo-body .mc-button {
+  display: inline-block; margin: 4px 6px 4px 0; padding: 8px 12px; background: #245b43;
+  color: #f7f2df; text-decoration: none; border: 2px solid #18372d;
+}
+@media (max-width: 700px) {
+  #boot-nav { left: 6px; top: 6px; width: calc(100vw - 12px); max-height: 46dvh; }
+  #boot-overlay { padding: 6px; }
+}
 </style>
 </head>
 <body>
 <main id="world" aria-label="My Home"></main>
 <div id="loading"><div class="bar"><i></i></div></div>
+
+<!-- Boot nav: plain HTML, so it is visible even before engine/main.js loads
+     (or if WebGL fails). It collapses once the 3D HUD appears. -->
+<aside id="boot-nav" aria-label="房间导航">
+  <div class="bn-head"><b>房间导航</b><span>ROOMS</span><button type="button" id="bn-toggle" aria-expanded="true">收起</button></div>
+  <div class="bn-body">
+    <p class="bn-hint" id="bn-hint">3D 世界正在加载。也可以直接在这里打开每个房间，无需等待。</p>
+    <span class="bn-label">导航房间 · DIRECTORY</span>
+    <div class="bn-grid" id="bn-nav"></div>
+    <span class="bn-label">3D 场景 · THE WORLD</span>
+    <div class="bn-grid" id="bn-scenes"></div>
+    <span class="bn-label">其他 · MORE</span>
+    <div class="bn-grid" id="bn-extra">
+      <a class="bn-link" href="assets/nav/directory.html?v=20261113b">独立目录 ↗</a>
+      <button class="bn-link" type="button" id="bn-plain">纯网页版</button>
+    </div>
+  </div>
+</aside>
+<div id="boot-overlay" hidden>
+  <div class="bo-card">
+    <div class="bo-head"><b id="bo-title">房间</b><button type="button" id="bo-close">关闭 ✕</button></div>
+    <iframe id="bo-frame" title="房间内容" hidden></iframe>
+    <div id="bo-body"></div>
+  </div>
+</div>
 
 <section id="pages">
   <h1 class="plain-title">My Home</h1>
@@ -215,44 +303,44 @@ dialog#panel[data-station="world"] { width: min(760px, calc(100vw - 32px)); }
   <!-- Navigation rooms, modelled on hbljx.github.io. Each card embeds the same
        directory with a different ?zone= so the Dock opens a different collection.
        The text below is the plain / no-JS fallback; the h2 is the panel title. -->
-  <article class="page" data-station="navall" data-icon="blog" data-embed="assets/nav/directory.html?zone=blog">
+  <article class="page" data-station="navall" data-icon="blog" data-embed="assets/nav/directory.html?zone=blog&amp;v=20261113b">
     <h2 data-zh="全部网址">All links</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Every link in one place: 18 categories, search, stars and backups. <a href="assets/nav/directory.html?zone=blog">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>所有网址都在这里：18 个分类、搜索、星标与备份。<a href="assets/nav/directory.html?zone=blog">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Every link in one place: 18 categories, search, stars and backups. <a href="assets/nav/directory.html?zone=blog&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>所有网址都在这里：18 个分类、搜索、星标与备份。<a href="assets/nav/directory.html?zone=blog&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
-  <article class="page" data-station="navdaily" data-icon="coffee" data-embed="assets/nav/directory.html?zone=about">
+  <article class="page" data-station="navdaily" data-icon="coffee" data-embed="assets/nav/directory.html?zone=about&amp;v=20261113b">
     <h2 data-zh="日常客厅">Living room</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Everyday bookmarks and the sites I open most. <a href="assets/nav/directory.html?zone=about">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>随手收藏和最常用的入口。<a href="assets/nav/directory.html?zone=about">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Everyday bookmarks and the sites I open most. <a href="assets/nav/directory.html?zone=about&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>随手收藏和最常用的入口。<a href="assets/nav/directory.html?zone=about&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
-  <article class="page" data-station="navai" data-icon="works" data-embed="assets/nav/directory.html?zone=works">
+  <article class="page" data-station="navai" data-icon="works" data-embed="assets/nav/directory.html?zone=works&amp;v=20261113b">
     <h2 data-zh="AI 工作台">AI studio</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Chat, image tools, APIs and relays for making things. <a href="assets/nav/directory.html?zone=works">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>对话、生图、接口与中转站。<a href="assets/nav/directory.html?zone=works">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Chat, image tools, APIs and relays for making things. <a href="assets/nav/directory.html?zone=works&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>对话、生图、接口与中转站。<a href="assets/nav/directory.html?zone=works&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
-  <article class="page" data-station="navlib" data-icon="writing" data-embed="assets/nav/directory.html?zone=writing">
+  <article class="page" data-station="navlib" data-icon="writing" data-embed="assets/nav/directory.html?zone=writing&amp;v=20261113b">
     <h2 data-zh="灵感书房">Library</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Books, wallpapers and design references. <a href="assets/nav/directory.html?zone=writing">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>图书、壁纸与设计素材。<a href="assets/nav/directory.html?zone=writing">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Books, wallpapers and design references. <a href="assets/nav/directory.html?zone=writing&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>图书、壁纸与设计素材。<a href="assets/nav/directory.html?zone=writing&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
-  <article class="page" data-station="navmusic" data-icon="camera" data-embed="assets/nav/directory.html?zone=coffee">
+  <article class="page" data-station="navmusic" data-icon="camera" data-embed="assets/nav/directory.html?zone=coffee&amp;v=20261113b">
     <h2 data-zh="音乐咖啡吧">Music cafe</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Something to listen to while you work. <a href="assets/nav/directory.html?zone=coffee">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>干活时候的背景音。<a href="assets/nav/directory.html?zone=coffee">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Something to listen to while you work. <a href="assets/nav/directory.html?zone=coffee&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>干活时候的背景音。<a href="assets/nav/directory.html?zone=coffee&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
-  <article class="page" data-station="navtools" data-icon="lab" data-embed="assets/nav/directory.html?zone=lab">
+  <article class="page" data-station="navtools" data-icon="lab" data-embed="assets/nav/directory.html?zone=lab&amp;v=20261113b">
     <h2 data-zh="工具车库">Workshop</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Office suites, software news and network tools. <a href="assets/nav/directory.html?zone=lab">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>办公、软件资讯与网络工具。<a href="assets/nav/directory.html?zone=lab">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Office suites, software news and network tools. <a href="assets/nav/directory.html?zone=lab&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>办公、软件资讯与网络工具。<a href="assets/nav/directory.html?zone=lab&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
-  <article class="page" data-station="navmarket" data-icon="map" data-embed="assets/nav/directory.html?zone=court">
+  <article class="page" data-station="navmarket" data-icon="map" data-embed="assets/nav/directory.html?zone=court&amp;v=20261113b">
     <h2 data-zh="行情观测站">Market station</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Industry indexes and data dashboards. <a href="assets/nav/directory.html?zone=court">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>行业指数与数据入口。<a href="assets/nav/directory.html?zone=court">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Industry indexes and data dashboards. <a href="assets/nav/directory.html?zone=court&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>行业指数与数据入口。<a href="assets/nav/directory.html?zone=court&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
-  <article class="page" data-station="navcommunity" data-icon="heart" data-embed="assets/nav/directory.html?zone=pool">
+  <article class="page" data-station="navcommunity" data-icon="heart" data-embed="assets/nav/directory.html?zone=pool&amp;v=20261113b">
     <h2 data-zh="社区花园">Community garden</h2>
-    <div class="about"><div class="about-text" lang="en"><p>Community picks and public-interest projects. <a href="assets/nav/directory.html?zone=pool">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>社区收藏与公益平台。<a href="assets/nav/directory.html?zone=pool">打开网址目录</a></p></div></div>
+    <div class="about"><div class="about-text" lang="en"><p>Community picks and public-interest projects. <a href="assets/nav/directory.html?zone=pool&amp;v=20261113b">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>社区收藏与公益平台。<a href="assets/nav/directory.html?zone=pool&amp;v=20261113b">打开网址目录</a></p></div></div>
   </article>
 
   <article class="page" data-station="world" data-icon="logo">
@@ -309,8 +397,146 @@ if (location.protocol === 'file:') {
 }
 </script>
 <noscript><style>#world,#hud,#loading{display:none}#pages{display:block}</style></noscript>
-<script type="module" src="engine/main.js"></script>
+<script type="module" src="engine/main.js?v=20261113b"></script>
 <!-- Bridges postMessage from the sandboxed directory iframe (close / export). -->
-<script type="module" src="assets/nav/bridge.js"></script>
-</body>
+<script type="module" src="assets/nav/bridge.js?v=20261113b"></script>
+<script>
+(function () {
+  var V = '20261113b';
+  var NAV = [
+    ['navall', '全部网址', 'blog'], ['navdaily', '日常客厅', 'about'],
+    ['navai', 'AI 工作台', 'works'], ['navlib', '灵感书房', 'writing'],
+    ['navmusic', '音乐咖啡吧', 'coffee'], ['navtools', '工具车库', 'lab'],
+    ['navmarket', '行情观测站', 'court'], ['navcommunity', '社区花园', 'pool']
+  ];
+  var SCENES = [
+    ['house', '大房子'], ['pool', '游泳池'], ['bedroom', '卧室'],
+    ['study', '书房'], ['billiards', '台球室'], ['island', '小岛'],
+    ['bridge', '桥梁'], ['busstop', '公交站'], ['bus', '公交车']
+  ];
+  var nav = document.getElementById('boot-nav');
+  var overlay = document.getElementById('boot-overlay');
+  var frame = document.getElementById('bo-frame');
+  var title = document.getElementById('bo-title');
+  var body = document.getElementById('bo-body');
+  var hint = document.getElementById('bn-hint');
+  var toggle = document.getElementById('bn-toggle');
+  var started = Date.now();
+  var forcedPlain = false;
+
+  function setMin(on) {
+    nav.classList.toggle('min', on);
+    toggle.textContent = on ? '展开' : '收起';
+    toggle.setAttribute('aria-expanded', on ? 'false' : 'true');
+  }
+  function closeOverlay() {
+    overlay.hidden = true;
+    frame.src = 'about:blank';
+    frame.hidden = true;
+    body.hidden = false;
+    body.replaceChildren();
+  }
+  function openRoom(id, zone, label) {
+    var home = window.__home;
+    if (home && typeof home.go === 'function') {
+      try { home.go(id); setMin(true); return; } catch (e) {}
+    }
+    title.textContent = label || id;
+    if (zone) {
+      body.hidden = true;
+      body.replaceChildren();
+      frame.hidden = false;
+      frame.src = 'assets/nav/directory.html?zone=' + zone + '&v=' + V;
+    } else {
+      frame.hidden = true;
+      frame.src = 'about:blank';
+      body.hidden = false;
+      body.replaceChildren();
+      var card = document.querySelector('#pages .page[data-station="' + id + '"]');
+      if (card) {
+        var clone = card.cloneNode(true);
+        clone.removeAttribute('data-station');
+        body.appendChild(clone);
+      } else {
+        var p = document.createElement('p');
+        p.textContent = '这个房间的内容正在加载，请稍后再试。';
+        body.appendChild(p);
+      }
+    }
+    overlay.hidden = false;
+  }
+  function addButton(host, label, id, zone) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'bn-link';
+    b.textContent = label;
+    b.addEventListener('click', function () { openRoom(id, zone, label); });
+    host.appendChild(b);
+  }
+  NAV.forEach(function (r) { addButton(document.getElementById('bn-nav'), r[1], r[0], r[2]); });
+  SCENES.forEach(function (r) { addButton(document.getElementById('bn-scenes'), r[1], r[0], null); });
+  addButton(document.getElementById('bn-extra'), '留言', 'mailbox', null);
+
+  toggle.addEventListener('click', function () { setMin(!nav.classList.contains('min')); });
+  document.getElementById('bo-close').addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeOverlay(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !overlay.hidden) closeOverlay();
+  });
+  var plainBtn = document.getElementById('bn-plain');
+  plainBtn.addEventListener('click', function () {
+    var on = document.body.classList.toggle('plain');
+    plainBtn.textContent = on ? '回到 3D' : '纯网页版';
+    if (on) closeOverlay();
+  });
+
+  function tick() {
+    var home = window.__home;
+    var hud = document.getElementById('hud');
+    // The engine hides #hud during the opening camera move. Keep this bar
+    // expanded until the Dock is actually on screen, otherwise the visitor
+    // briefly has no clickable rooms at all.
+    var hudVisible = !!(hud && !hud.hidden && getComputedStyle(hud).display !== 'none');
+    if (home && home.player && hudVisible) {
+      if (forcedPlain) { document.body.classList.remove('plain'); forcedPlain = false; }
+      setMin(true);
+      hint.textContent = '3D 世界已就绪：用底部工具栏、数字键 1–9，或走到物件前按 F 打开房间。';
+      return;
+    }
+    if (home && home.player) {
+      hint.textContent = '3D 世界正在播放开场镜头；这里可以直接打开每个房间。';
+    } else if (hudVisible) {
+      hint.textContent = '3D 场景加载中；这里可以直接打开每个房间。';
+    }
+    if (!forcedPlain && Date.now() - started > 18000 && !(home && home.player)) {
+      forcedPlain = true;
+      document.body.classList.add('plain');
+      hint.textContent = '3D 世界未能加载，已切换为纯网页版：下面列出所有房间内容。';
+    }
+    setTimeout(tick, 800);
+  }
+  // An embedded directory card can occasionally come up blank when a cached
+  // module is replaced mid-deploy. Reload that iframe once with a fresh URL
+  // instead of leaving an empty panel on screen.
+  var retried = Object.create(null);
+  setInterval(function () {
+    var f = document.querySelector('#panel[open] .body iframe');
+    if (!f) return;
+    var key = f.getAttribute('src') || '';
+    if (!key || retried[key]) return;
+    var doc = null;
+    try { doc = f.contentDocument; } catch (e) { return; }
+    if (doc && doc.body && doc.body.dataset.ready === 'true') return;
+    var born = +(f.dataset.bootBorn || (f.dataset.bootBorn = String(Date.now())));
+    if (Date.now() - born < 8000) return;
+    retried[key] = true;
+    try {
+      var u = new URL(f.src, location.href);
+      u.searchParams.set('_retry', '1');
+      f.src = u.href;
+    } catch (e) {}
+  }, 1000);
+  setTimeout(tick, 800);
+})();
+</script></body>
 </html>

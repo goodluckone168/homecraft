@@ -3,7 +3,7 @@
 // collision footprints and station hotspots are collected here too.
 import * as THREE from 'three';
 import { BoxBatch } from '@engine/world/blocks.js';
-import { HOUSE, POOL, POOL_LADDER, POOL_LAMPS } from './layout.js';
+import { HOUSE, POOL, POOL_LADDER, POOL_LAMPS } from './layout.js?v=20261113b';
 
 const L = {
   wood: { tex: 'wood_panel' },

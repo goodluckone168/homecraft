@@ -3,7 +3,7 @@
 // whole extension only adds a handful of draw calls.
 import * as THREE from 'three';
 import { BoxBatch } from '@engine/world/blocks.js';
-import { ISLET, BRIDGE, BUS_STOP, BUS } from './layout.js';
+import { ISLET, BRIDGE, BUS_STOP, BUS, PLAZA } from './layout.js?v=20261113b';
 
 const C = (a, b) => (a + b) / 2;
 
@@ -31,6 +31,71 @@ export function furnishOutdoors({ layer }) {
       new THREE.Vector3(x + w / 2, y + h, z + d / 2)) });
   const bake = (id, x, y, z, power, radius) =>
     bakes.push({ id, position: [x, y, z], power, radius, direction: null });
+
+  // ---- Plaza (visible from the spawn point) -------------------------------
+  // The concrete comes from surfaceAt() in house.js. These are the props that
+  // make the landing area feel built: a basketball court, four lamp posts,
+  // benches, planters and a pixel welcome sign. Thin painted lines sit just
+  // above y = 0 and carry no collision, so the player can still cross freely.
+  const PX = C(PLAZA.x0, PLAZA.x1), PZ = C(PLAZA.z0, PLAZA.z1);
+  const chalk = L.light(0xf3ece0, 0.12);
+  const court = { x0: 7, x1: 15, z0: 12, z1: 19 };
+
+  // A thin coloured court slab plus painted boundary / centre / key lines.
+  B.box(C(court.x0, court.x1), 0.012, C(court.z0, court.z1),
+    court.x1 - court.x0, 0.024, court.z1 - court.z0, L.paint(0x9c5f43));
+  for (const z of [court.z0 + 0.12, court.z1 - 0.12]) {
+    B.box(C(court.x0, court.x1), 0.026, z, court.x1 - court.x0 - 0.2, 0.012, 0.1, chalk);
+  }
+  for (const x of [court.x0 + 0.12, court.x1 - 0.12, C(court.x0, court.x1)]) {
+    B.box(x, 0.026, C(court.z0, court.z1), 0.1, 0.012, court.z1 - court.z0 - 0.2, chalk);
+  }
+  B.box(C(court.x0, court.x1), 0.026, C(court.z0, court.z1), 1.9, 0.012, 0.09, chalk);
+  B.box(C(court.x0, court.x1), 0.026, C(court.z0, court.z1), 0.09, 0.012, 1.9, chalk);
+
+  // Two hoops with a backboard, rim and a short support pole.
+  for (const [hx, dir] of [[court.x0 - 0.35, 1], [court.x1 + 0.35, -1]]) {
+    B.box(hx, 0, PZ, 0.18, 3.1, 0.18, L.steel);
+    B.box(hx + dir * 0.42, 2.65, PZ, 0.1, 0.85, 1.5, L.light(0xf3ece0, 0.18));
+    B.box(hx + dir * 0.75, 2.62, PZ, 0.07, 0.07, 0.62, L.paint(0xe2623f));
+    for (const dz of [-0.3, 0.3]) B.box(hx + dir * 0.6, 2.62, PZ + dz, 0.36, 0.07, 0.07, L.paint(0xe2623f));
+    B.box(hx + dir * 1.05, 2.6, PZ, 0.06, 0.06, 0.5, L.light(0xe8775a, 0.55));
+    foot(hx, PZ, 0.5, 0.5);
+  }
+
+  // Four lamp posts around the plaza edge.
+  for (const [lx, lz] of [[5.4, 11.2], [16.6, 11.2], [5.4, 20.6], [16.6, 20.6]]) {
+    B.box(lx, 0, lz, 0.16, 3.5, 0.16, L.steel);
+    B.box(lx, 3.5, lz, 0.52, 0.32, 0.52, L.light(0xffdfa8, 0.9));
+    bake('plaza-lamp-' + lx + '-' + lz, lx, 3.6, lz, 0.6, 8);
+    foot(lx, lz, 0.4, 0.4);
+  }
+
+  // Two benches and two planters with low greenery.
+  for (const [bx, bz, ry] of [[6.1, PZ, Math.PI / 2], [15.9, PZ, -Math.PI / 2]]) {
+    B.box(bx, 0.42, bz, 1.9, 0.13, 0.6, L.wood, { ry });
+    B.box(bx, 0.55, bz, 1.9, 0.5, 0.12, L.wood, { ry });
+    for (const off of [-0.75, 0.75]) B.box(bx + off * Math.cos(ry), 0, bz - off * Math.sin(ry), 0.12, 0.42, 0.55, L.steel);
+    foot(bx, bz, 2.1, 0.8);
+  }
+  for (const [fx, fz] of [[PLAZA.x0 + 0.9, PLAZA.z0 + 0.9], [PLAZA.x1 - 0.9, PLAZA.z1 - 0.9]]) {
+    B.box(fx, 0, fz, 1.1, 0.5, 1.1, L.paint(0x8b6a4b));
+    B.box(fx, 0.5, fz, 0.95, 0.12, 0.95, L.paint(0x4c6b3a));
+    B.box(fx, 0.62, fz, 0.85, 0.85, 0.85, L.leaves);
+    B.box(fx + 0.2, 1.47, fz - 0.15, 0.28, 0.28, 0.28, L.paint(0xe26b6b));
+    foot(fx, fz, 1.2, 1.2);
+  }
+
+  // A pixel welcome sign facing the spawn path (x ≈ 0.5, z ≈ 18).
+  B.box(4.3, 0, 18, 0.18, 2.6, 0.18, L.steel);
+  B.box(5.2, 0, 18, 0.18, 2.6, 0.18, L.steel);
+  B.box(4.75, 1.9, 18, 2.0, 1.05, 0.16, L.paint(0x245b43));
+  for (const [i, ox] of [-0.66, -0.22, 0.22, 0.66].entries()) {
+    B.box(4.75 + ox, 2.16, 17.9, 0.3, 0.42 + (i % 2) * 0.2, 0.05, L.light(0xebc775, 0.8));
+  }
+  B.box(4.75, 1.98, 17.9, 1.6, 0.09, 0.05, L.light(0xf3ece0, 0.6));
+  foot(4.75, 18, 2.2, 0.5);
+  bake('plaza-sign', 4.75, 2.4, 18, 0.4, 6);
 
   // ---- Bridge ------------------------------------------------------------
   // The deck block itself lives at y = -1 in the voxel grid (see buildLagoon).

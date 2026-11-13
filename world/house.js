@@ -1,8 +1,8 @@
 // The house shell, the pool basin, the island surface and the east lagoon,
 // built from blocks. The island itself comes from the engine
 // (@engine/world/terrain.js).
-import { HOUSE, SHELL, ENTRANCE, TERRACE, POOL, POOL_DECK,
-  LAGOON, ISLET, BRIDGE, ROAD, BUS_STOP } from './layout.js';
+import { HOUSE, SHELL, ENTRANCE, TERRACE, POOL, POOL_DECK, PLAZA,
+  LAGOON, ISLET, BRIDGE, ROAD, BUS_STOP } from './layout.js?v=20261113b';
 import { inRect } from '@engine/world/terrain.js';
 
 export function defineBlocks(grid) {
@@ -31,6 +31,7 @@ export function surfaceAt(x, z) {
   if (inRect(POOL_DECK, x, z)) return 'travertine';
   if (inRect(ISLET, x, z)) return 'sand';
   if (inRect(BRIDGE, x, z)) return 'deck';
+  if (inRect(PLAZA, x, z)) return 'concrete';
   if (inRect(ROAD, x, z) || inRect(BUS_STOP, x, z)) return 'pavers';
   if (x >= -2 && x < 3 && z >= 6 && z < 24) return 'pavers';
   return 'grass';
