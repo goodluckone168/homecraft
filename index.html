@@ -7,11 +7,11 @@
 <!-- The world draws its own day and night. -->
 <meta name="color-scheme" content="only light">
 <meta name="darkreader-lock">
-<title>My Home</title>
-<meta name="description" content="">
+<title>My Home · 像素导航</title>
+<meta name="description" content="My Home 的 3D 导航之家：18 个分类、158 个网址，走进我的世界，把好用的留在手边。">
 <meta property="og:type" content="website">
-<meta property="og:title" content="My Home">
-<meta property="og:description" content="">
+<meta property="og:title" content="My Home · 像素导航">
+<meta property="og:description" content="18 个分类、158 个网址，走进我的世界，把好用的留在手边。">
 <meta property="og:image" content="assets/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.png">
@@ -22,6 +22,23 @@
   "@world/":"./world/",
   "@config":"./home.config.js"
 }}</script>
+<style>
+/* The directory is a full 2D site inside the panel: give embedded nav rooms
+   more room than the default 960x720 card, and let them fill small screens. */
+dialog#panel[data-station^="nav"] {
+  width: min(1180px, calc(100vw - 32px));
+  height: min(800px, calc(100dvh - 96px));
+}
+dialog#panel[data-station^="nav"] .body { overflow: hidden; }
+dialog#panel[data-station="world"] { width: min(760px, calc(100vw - 32px)); }
+@media (max-width: 700px) {
+  dialog#panel[data-station^="nav"] {
+    inset: max(8px, env(safe-area-inset-top)) 0 calc(60px + env(safe-area-inset-bottom));
+    width: calc(100vw - 12px);
+    height: auto;
+  }
+}
+</style>
 </head>
 <body>
 <main id="world" aria-label="My Home"></main>
@@ -195,6 +212,87 @@
     </div>
   </article>
 
+  <!-- Navigation rooms, modelled on hbljx.github.io. Each card embeds the same
+       directory with a different ?zone= so the Dock opens a different collection.
+       The text below is the plain / no-JS fallback; the h2 is the panel title. -->
+  <article class="page" data-station="navall" data-icon="blog" data-embed="assets/nav/directory.html?zone=blog">
+    <h2 data-zh="全部网址">All links</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Every link in one place: 18 categories, search, stars and backups. <a href="assets/nav/directory.html?zone=blog">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>所有网址都在这里：18 个分类、搜索、星标与备份。<a href="assets/nav/directory.html?zone=blog">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="navdaily" data-icon="coffee" data-embed="assets/nav/directory.html?zone=about">
+    <h2 data-zh="日常客厅">Living room</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Everyday bookmarks and the sites I open most. <a href="assets/nav/directory.html?zone=about">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>随手收藏和最常用的入口。<a href="assets/nav/directory.html?zone=about">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="navai" data-icon="works" data-embed="assets/nav/directory.html?zone=works">
+    <h2 data-zh="AI 工作台">AI studio</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Chat, image tools, APIs and relays for making things. <a href="assets/nav/directory.html?zone=works">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>对话、生图、接口与中转站。<a href="assets/nav/directory.html?zone=works">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="navlib" data-icon="writing" data-embed="assets/nav/directory.html?zone=writing">
+    <h2 data-zh="灵感书房">Library</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Books, wallpapers and design references. <a href="assets/nav/directory.html?zone=writing">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>图书、壁纸与设计素材。<a href="assets/nav/directory.html?zone=writing">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="navmusic" data-icon="camera" data-embed="assets/nav/directory.html?zone=coffee">
+    <h2 data-zh="音乐咖啡吧">Music cafe</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Something to listen to while you work. <a href="assets/nav/directory.html?zone=coffee">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>干活时候的背景音。<a href="assets/nav/directory.html?zone=coffee">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="navtools" data-icon="lab" data-embed="assets/nav/directory.html?zone=lab">
+    <h2 data-zh="工具车库">Workshop</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Office suites, software news and network tools. <a href="assets/nav/directory.html?zone=lab">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>办公、软件资讯与网络工具。<a href="assets/nav/directory.html?zone=lab">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="navmarket" data-icon="map" data-embed="assets/nav/directory.html?zone=court">
+    <h2 data-zh="行情观测站">Market station</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Industry indexes and data dashboards. <a href="assets/nav/directory.html?zone=court">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>行业指数与数据入口。<a href="assets/nav/directory.html?zone=court">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="navcommunity" data-icon="heart" data-embed="assets/nav/directory.html?zone=pool">
+    <h2 data-zh="社区花园">Community garden</h2>
+    <div class="about"><div class="about-text" lang="en"><p>Community picks and public-interest projects. <a href="assets/nav/directory.html?zone=pool">Open the directory</a></p></div><div class="about-text" lang="zh-CN"><p>社区收藏与公益平台。<a href="assets/nav/directory.html?zone=pool">打开网址目录</a></p></div></div>
+  </article>
+
+  <article class="page" data-station="world" data-icon="logo">
+    <h2 data-zh="3D 世界">The 3D world</h2>
+    <div class="about">
+      <div class="about-text" lang="en">
+        <p>Nine places to walk through. Pick one below, or stand near something in the world and press F.</p>
+        <div class="about-foot" style="flex-wrap:wrap">
+          <a class="mc-button" href="#house" data-open="house">House</a>
+          <a class="mc-button" href="#pool" data-open="pool">Pool</a>
+          <a class="mc-button" href="#bedroom" data-open="bedroom">Bedroom</a>
+          <a class="mc-button" href="#study" data-open="study">Study</a>
+          <a class="mc-button" href="#billiards" data-open="billiards">Billiards</a>
+          <a class="mc-button" href="#island" data-open="island">Island</a>
+          <a class="mc-button" href="#bridge" data-open="bridge">Bridge</a>
+          <a class="mc-button" href="#busstop" data-open="busstop">Bus stop</a>
+          <a class="mc-button" href="#bus" data-open="bus">Bus</a>
+          <a class="mc-button" href="#mailbox" data-open="mailbox">Mailbox</a>
+          <a class="mc-button" href="#contact" data-open="phone">Phone</a>
+        </div>
+      </div>
+      <div class="about-text" lang="zh-CN">
+        <p>九个可以走进去的地方。点下面的按钮，或者在世界里走到物件旁边按 F。</p>
+        <div class="about-foot" style="flex-wrap:wrap">
+          <a class="mc-button" href="#house" data-open="house">大房子</a>
+          <a class="mc-button" href="#pool" data-open="pool">游泳池</a>
+          <a class="mc-button" href="#bedroom" data-open="bedroom">卧室</a>
+          <a class="mc-button" href="#study" data-open="study">书房</a>
+          <a class="mc-button" href="#billiards" data-open="billiards">台球室</a>
+          <a class="mc-button" href="#island" data-open="island">小岛</a>
+          <a class="mc-button" href="#bridge" data-open="bridge">桥梁</a>
+          <a class="mc-button" href="#busstop" data-open="busstop">公交站</a>
+          <a class="mc-button" href="#bus" data-open="bus">公交车</a>
+          <a class="mc-button" href="#mailbox" data-open="mailbox">留言</a>
+          <a class="mc-button" href="#contact" data-open="phone">手机</a>
+        </div>
+      </div>
+    </div>
+  </article>
+
 </section>
 
 <!-- file:// cannot load the world modules. -->
@@ -212,5 +310,7 @@ if (location.protocol === 'file:') {
 </script>
 <noscript><style>#world,#hud,#loading{display:none}#pages{display:block}</style></noscript>
 <script type="module" src="engine/main.js"></script>
+<!-- Bridges postMessage from the sandboxed directory iframe (close / export). -->
+<script type="module" src="assets/nav/bridge.js"></script>
 </body>
 </html>
